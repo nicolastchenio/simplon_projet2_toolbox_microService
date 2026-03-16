@@ -47,27 +47,44 @@ Responsabilités :
 - 
 ```
 """
+"""
 Database connection configuration using SQLAlchemy.
 
 This module initializes the database engine and session used by the API.
-During development, the application uses a local SQLite database.
+The application uses a local SQLite database stored in app_api/data/.
 """
 
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-DATABASE_URL = "sqlite:///./test.db"
+# Définir le chemin du fichier SQLite
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_PATH = os.path.join(BASE_DIR, "data", "testsqlite.db")
+os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+# URL de connexion SQLAlchemy pour SQLite
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_PATH}"
 
+# Création de l'engine
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False}  # requis pour SQLite et threads multiples
+)
+
+# Session locale pour les transactions
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+# Base pour la définition des modèles
 Base = declarative_base()
 
 
 def get_db():
     """
-    Dependency used by FastAPI to provide a database session.
+    Dependency function to provide a database session.
+
+    Yields:
+        Session: SQLAlchemy session
     """
     db = SessionLocal()
     try:
@@ -81,24 +98,31 @@ Dans app_api/models/models.py :
 
 ```
 """
-Database models used by the application.
+ORM models for the application.
+
+Defines the Operation table to store mathematical operations.
 """
 
-from sqlalchemy import Column, Integer, Float
-from app_api.modules.connect import Base
+from sqlalchemy import Column, Integer, String, Float
+from ..modules.connect import Base  # importer Base depuis connect, pas depuis lui-même
 
-
-class Data(Base):
+class Operation(Base):
     """
-    SQLAlchemy model representing stored numeric data.
-    """
+    SQLAlchemy ORM model for a mathematical operation.
 
-    __tablename__ = "data"
+    Attributes:
+        id (int): Primary key.
+        operation (str): Operation type ("add", "sub", "square").
+        a (float): First operand.
+        b (float | None): Second operand (optional for square).
+    """
+    __tablename__ = "operations"
+    __table_args__ = {"extend_existing": True}  # Evite l'erreur "table already defined"
 
     id = Column(Integer, primary_key=True, index=True)
-    value_a = Column(Float)
-    value_b = Column(Float)
-    result = Column(Float)
+    operation = Column(String, nullable=False)
+    a = Column(Float, nullable=False)
+    b = Column(Float, nullable=True)
 ```
 
 3) Implémenter les opérations CRUD
@@ -107,33 +131,44 @@ Dans app_api/modules/crud.py :
 
 ```
 """
-CRUD operations for the database.
+CRUD operations for the Operation model.
+
+Provides functions to insert and retrieve operations from the database.
 """
 
 from sqlalchemy.orm import Session
-from app_api.models.models import Data
+from app_api.models.models import Operation
 
-
-def create_data(db: Session, value_a: float, value_b: float, result: float):
+def create_data(db: Session, operation: str, a: float, b: float | None = None) -> Operation:
     """
-    Insert new data into the database.
+    Insert a new operation into the database.
+
+    Args:
+        db (Session): Database session
+        operation (str): Operation type ("add", "sub", "square")
+        a (float): First operand
+        b (float | None): Second operand (optional)
+
+    Returns:
+        Operation: The newly created Operation object
     """
-
-    data = Data(value_a=value_a, value_b=value_b, result=result)
-
-    db.add(data)
+    db_operation = Operation(operation=operation, a=a, b=b)
+    db.add(db_operation)
     db.commit()
-    db.refresh(data)
+    db.refresh(db_operation)
+    return db_operation
 
-    return data
-
-
-def get_all_data(db: Session):
+def get_all_data(db: Session) -> list[Operation]:
     """
-    Retrieve all stored data from the database.
-    """
+    Retrieve all operations from the database.
 
-    return db.query(Data).all()
+    Args:
+        db (Session): Database session
+
+    Returns:
+        list[Operation]: List of Operation objects
+    """
+    return db.query(Operation).all()
 ```
 
 4) fichier pyproject.toml dans app_api
@@ -147,7 +182,6 @@ et activer le nouveau environnement
 ```
 .venv\Scripts\activate
 ```
-
 
 ```
 cd app_api
@@ -179,25 +213,72 @@ uv run python -c "import fastapi, sqlalchemy"
 
 dans app_api/main.py :
 
+```
 """
-Main FastAPI application.
+FastAPI application entry point.
 
-This module defines the API endpoints used to interact with the
-database and the mathematical toolbox functions.
+Provides API endpoints to insert and list mathematical operations.
 """
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-
-from app_api.modules.connect import engine, Base, get_db
+from app_api.modules.connect import Base, engine, get_db
 from app_api.modules.crud import create_data, get_all_data
+from .models.models import Operation
 
-app = FastAPI()
+# Crée les tables SQLite si elles n'existent pas
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="Operations API", description="API for managing operations in SQLite database", version="1.0.0")
+
+@app.get("/")
+def read_root():
+    """
+    Root endpoint.
+
+    Returns a simple message to indicate that the API is running.
+
+    Returns:
+        dict: A dictionary with a message.
+    """
+    return {"message": "API is running"}
+
+
+@app.post("/operations/")
+def add_operation(operation: str, a: float, b: float | None = None, db: Session = Depends(get_db)):
+    """
+    Add a new mathematical operation.
+
+    Args:
+        operation (str): Operation type ("add", "sub", "square")
+        a (float): First operand
+        b (float | None): Second operand (optional)
+        db (Session): Database session (dependency)
+
+    Returns:
+        dict: Created operation info
+    """
+    return create_data(db, operation, a, b).__dict__
+
+@app.get("/operations/")
+def list_operations(db: Session = Depends(get_db)):
+    """
+    List all operations stored in the database.
+
+    Args:
+        db (Session): Database session (dependency)
+
+    Returns:
+        list[dict]: List of operations as dictionaries
+    """
+    operations = get_all_data(db)
+    return [op.__dict__ for op in operations]
+```
 
 # création automatique des tables
 Base.metadata.create_all(bind=engine)
 
-"""
+```
 @app.get("/")
 def root():
     """
@@ -220,27 +301,53 @@ def read_data(db: Session = Depends(get_db)):
     Retrieve all stored records.
     """
     return get_all_data(db)
-"""
+```
 
 6) Test
    
 A la racine du projet:
 
-"""
+```
 uv run uvicorn app_api.main:app --reload
-"""
+```
 Ouvrir dans le navigateur :
 http://127.0.0.1:8000/docs
 
 Tester l’insertion et la lecture des données avec les endpoints /data :
-"""
-curl -X POST "http://127.0.0.1:8000/data?value_a=10&value_b=5&result=15"
-"""
-"""
+```
+curl -X POST "http://127.0.0.1:8000/operations/?operation=add&a=10&b=5"
+```
+```
 curl "http://127.0.0.1:8000/data"
-"""
+```
 
 Vérifier la base SQLite (facultatif) :
-"""
+```
 sqlite3 app_api/test.db "SELECT * FROM data;"
-"""
+```
+
+### Étape 3 — Implémenter Streamlit ###
+
+4) fichier pyproject.toml dans app_api
+```
+cd app_front
+uv init
+uv add streamlit
+```
+
+activer le nouveau environnement 
+```
+.venv\Scripts\activate
+```
+uv streamlit
+```
+Après installation, tu peux vérifier que Streamlit est disponible :
+
+```
+uv run streamlit --version
+```
+
+Ensuite, pour lancer ton frontend Streamlit :
+```
+uv run streamlit run main.py
+```

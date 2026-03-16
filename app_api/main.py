@@ -1,41 +1,59 @@
 """
-Main FastAPI application.
+FastAPI application entry point.
 
-This module defines the API endpoints used to interact with the
-database and the mathematical toolbox functions.
+Provides API endpoints to insert and list mathematical operations.
 """
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-
-from app_api.modules.connect import engine, Base, get_db
+from app_api.modules.connect import Base, engine, get_db
 from app_api.modules.crud import create_data, get_all_data
+from .models.models import Operation
 
-app = FastAPI()
-
-# création automatique des tables
+# Crée les tables SQLite si elles n'existent pas
 Base.metadata.create_all(bind=engine)
 
+app = FastAPI(title="Operations API", description="API for managing operations in SQLite database", version="1.0.0")
 
 @app.get("/")
-def root():
+def read_root():
     """
-    Health check endpoint.
+    Root endpoint.
+
+    Returns a simple message to indicate that the API is running.
+
+    Returns:
+        dict: A dictionary with a message.
     """
     return {"message": "API is running"}
 
 
-@app.post("/data")
-def add_data(value_a: float, value_b: float, result: float, db: Session = Depends(get_db)):
+@app.post("/operations/")
+def add_operation(operation: str, a: float, b: float | None = None, db: Session = Depends(get_db)):
     """
-    Insert a new record into the database.
-    """
-    return create_data(db, value_a, value_b, result)
+    Add a new mathematical operation.
 
+    Args:
+        operation (str): Operation type ("add", "sub", "square")
+        a (float): First operand
+        b (float | None): Second operand (optional)
+        db (Session): Database session (dependency)
 
-@app.get("/data")
-def read_data(db: Session = Depends(get_db)):
+    Returns:
+        dict: Created operation info
     """
-    Retrieve all stored records.
+    return create_data(db, operation, a, b).__dict__
+
+@app.get("/operations/")
+def list_operations(db: Session = Depends(get_db)):
     """
-    return get_all_data(db)
+    List all operations stored in the database.
+
+    Args:
+        db (Session): Database session (dependency)
+
+    Returns:
+        list[dict]: List of operations as dictionaries
+    """
+    operations = get_all_data(db)
+    return [op.__dict__ for op in operations]

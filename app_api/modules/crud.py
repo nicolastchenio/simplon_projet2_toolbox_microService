@@ -1,28 +1,39 @@
 """
-CRUD operations for the database.
+CRUD operations for the Operation model.
+
+Provides functions to insert and retrieve operations from the database.
 """
 
 from sqlalchemy.orm import Session
-from app_api.models.models import Data
+from app_api.models.models import Operation
 
-
-def create_data(db: Session, value_a: float, value_b: float, result: float):
+def create_data(db: Session, operation: str, a: float, b: float | None = None) -> Operation:
     """
-    Insert new data into the database.
+    Insert a new operation into the database.
+
+    Args:
+        db (Session): Database session
+        operation (str): Operation type ("add", "sub", "square")
+        a (float): First operand
+        b (float | None): Second operand (optional)
+
+    Returns:
+        Operation: The newly created Operation object
     """
-
-    data = Data(value_a=value_a, value_b=value_b, result=result)
-
-    db.add(data)
+    db_operation = Operation(operation=operation, a=a, b=b)
+    db.add(db_operation)
     db.commit()
-    db.refresh(data)
+    db.refresh(db_operation)
+    return db_operation
 
-    return data
-
-
-def get_all_data(db: Session):
+def get_all_data(db: Session) -> list[Operation]:
     """
-    Retrieve all stored data from the database.
-    """
+    Retrieve all operations from the database.
 
-    return db.query(Data).all()
+    Args:
+        db (Session): Database session
+
+    Returns:
+        list[Operation]: List of Operation objects
+    """
+    return db.query(Operation).all()
