@@ -328,19 +328,19 @@ sqlite3 app_api/test.db "SELECT * FROM data;"
 
 ### Étape 3 — Implémenter Streamlit ###
 
-4) fichier pyproject.toml dans app_api
+1) fichier pyproject.toml dans app_api
 ```
 cd app_front
 uv init
 uv add streamlit
+uv add sqlalchemy requests pandas
 ```
 
 activer le nouveau environnement 
 ```
 .venv\Scripts\activate
 ```
-uv streamlit
-```
+
 Après installation, tu peux vérifier que Streamlit est disponible :
 
 ```
@@ -351,3 +351,168 @@ Ensuite, pour lancer ton frontend Streamlit :
 ```
 uv run streamlit run main.py
 ```
+
+2) app_front/main.py
+
+```
+"""
+Streamlit application entry point.
+
+This module initializes the main interface of the frontend application.
+It provides a simple landing page explaining the purpose of the app.
+
+The frontend communicates with the FastAPI backend to:
+- Insert new mathematical operations
+- Retrieve stored operations from the database
+"""
+
+import streamlit as st
+
+st.set_page_config(
+    page_title="Math Operations App",
+    page_icon="🧮",
+    layout="centered",
+)
+
+st.title("Math Operations Application")
+
+st.write(
+    """
+This Streamlit application allows users to interact with a backend API
+that stores mathematical operations in a database.
+
+Available features:
+- Insert new mathematical operations
+- View previously stored operations
+"""
+)
+
+st.info(
+    "Use the navigation menu on the left to insert or view operations."
+)
+
+```
+
+3) app_front/pages/0_insert.py
+
+```
+"""
+Streamlit page used to insert mathematical operations.
+
+This page provides a form allowing the user to create a new
+mathematical operation. The operation is sent to the FastAPI backend
+via an HTTP POST request.
+
+Supported operations:
+- add
+- sub
+- square
+
+The backend API stores the operation in a SQLite database.
+"""
+
+import streamlit as st
+import requests
+
+API_URL = "http://127.0.0.1:8000/operations/"
+
+st.title("Insert a Mathematical Operation")
+
+operation = st.selectbox(
+    "Select operation",
+    ["add", "sub", "square"]
+)
+
+a = st.number_input("Value A", value=0.0)
+
+b = None
+if operation != "square":
+    b = st.number_input("Value B", value=0.0)
+
+if st.button("Submit operation"):
+    params = {
+        "operation": operation,
+        "a": a,
+        "b": b,
+    }
+
+    try:
+        response = requests.post(API_URL, params=params)
+
+        if response.status_code == 200:
+            st.success("Operation successfully stored.")
+            st.json(response.json())
+        else:
+            st.error("Error while inserting operation.")
+
+    except requests.exceptions.ConnectionError:
+        st.error("Unable to connect to the API. Make sure FastAPI is running.")
+```
+
+4) app_front/pages/1_read.py
+
+```
+"""
+Streamlit page used to display stored operations.
+
+This page retrieves all mathematical operations stored in the
+database by calling the FastAPI backend API.
+
+The retrieved data is displayed in a tabular format using
+a pandas DataFrame.
+"""
+
+import streamlit as st
+import requests
+import pandas as pd
+
+API_URL = "http://127.0.0.1:8000/operations/"
+
+st.title("Stored Mathematical Operations")
+
+if st.button("Load operations"):
+    try:
+        response = requests.get(API_URL)
+
+        if response.status_code == 200:
+            data = response.json()
+
+            if len(data) == 0:
+                st.warning("No operations found in the database.")
+            else:
+                df = pd.DataFrame(data)
+                st.dataframe(df)
+
+        else:
+            st.error("Error while retrieving operations.")
+
+    except requests.exceptions.ConnectionError:
+        st.error("Unable to connect to the API. Make sure FastAPI is running.")
+
+
+```
+5) pour tester
+- Terminal 1 — API
+Depuis la racine du projet :
+```
+cd app_api
+.venv\Scripts\activate
+cd..
+
+uv run uvicorn app_api.main:app --reload
+```
+
+API disponible sur :
+
+http://127.0.0.1:8000
+
+- Terminal 2 — Frontend
+```
+cd app_front
+.venv\Scripts\activate
+uv run streamlit run main.py
+```
+
+Interface :
+
+http://localhost:8501
