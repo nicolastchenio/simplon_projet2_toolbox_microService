@@ -1,68 +1,41 @@
-"""Application entry point.
+"""
+Main FastAPI application.
 
-This script reads a CSV file describing mathematical operations,
-executes them using functions from the business logic module,
-and prints the results.
+This module defines the API endpoints used to interact with the
+database and the mathematical toolbox functions.
 """
 
-import os
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session
 
-import pandas as pd
+from app_api.modules.connect import engine, Base, get_db
+from app_api.modules.crud import create_data, get_all_data
 
-from .maths.mon_module import add, print_data, square, sub
+app = FastAPI()
 
-CSV_FILE_PATH = os.path.join(os.path.dirname(__file__), "moncsv.csv")
+# création automatique des tables
+Base.metadata.create_all(bind=engine)
 
 
-def execute_operations(df: pd.DataFrame) -> None:
-    """Execute mathematical operations described in a DataFrame.
-
-    The DataFrame must contain the following columns:
-    - operation: name of the operation ("add", "sub", "square")
-    - a: first operand
-    - b: second operand (optional for square)
-
-    Args:
-        df (pd.DataFrame): DataFrame containing the operations to execute.
-
+@app.get("/")
+def root():
     """
-    for _, row in df.iterrows():
-        operation = row["operation"]
-        a = row["a"]
-        b = row["b"]
-
-        if operation == "add":
-            result = add(a, b)
-
-        elif operation == "sub":
-            result = sub(a, b)
-
-        elif operation == "square":
-            result = square(a)
-
-        else:
-            print(f"Unknown operation: {operation}")
-            continue
-
-        print(f"{operation}({a}, {b}) = {result}")
-
-
-def main() -> None:
-    """Run the application workflow.
-
-    Steps:
-        1. Load the CSV file containing operations.
-        2. Display the dataset.
-        3. Execute the operations defined in the file.
+    Health check endpoint.
     """
-    df = pd.read_csv(CSV_FILE_PATH)
-
-    print("Loaded dataset:")
-    print_data(df)
-
-    print("\nExecuting operations:\n")
-    execute_operations(df)
+    return {"message": "API is running"}
 
 
-if __name__ == "__main__":
-    main()
+@app.post("/data")
+def add_data(value_a: float, value_b: float, result: float, db: Session = Depends(get_db)):
+    """
+    Insert a new record into the database.
+    """
+    return create_data(db, value_a, value_b, result)
+
+
+@app.get("/data")
+def read_data(db: Session = Depends(get_db)):
+    """
+    Retrieve all stored records.
+    """
+    return get_all_data(db)

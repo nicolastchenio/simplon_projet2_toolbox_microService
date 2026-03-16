@@ -1,14 +1,27 @@
 """
-Database connection management.
+Database connection configuration using SQLAlchemy.
 
-This module is responsible for configuring and creating the connection
-to the database using SQLAlchemy.
-
-It defines:
-- the database engine
-- the session factory
-- utilities used by the API to interact with the database
-
-During development, the database may be SQLite. In production,
-the configuration can be switched to PostgreSQL.
+This module initializes the database engine and session used by the API.
+During development, the application uses a local SQLite database stored in app_api/data/.
 """
+
+import os
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "data", "testsqlite.db")
+os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_PATH}"
+
+engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

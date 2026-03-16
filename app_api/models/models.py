@@ -1,11 +1,19 @@
 """
-Pydantic data models used by the API.
-
-This module defines the schemas used to validate and serialize data
-exchanged between the client (Streamlit frontend) and the FastAPI
-backend.
-
-The models ensure that incoming requests respect the expected
-structure and data types before being processed or stored in the
-database.
+Database models used by the application.
 """
+
+from sqlalchemy import Column, Integer, Float
+from app_api.modules.connect import Base
+
+
+class Data(Base):
+    """
+    SQLAlchemy model representing stored numeric data.
+    """
+
+    __tablename__ = "data"
+
+    id = Column(Integer, primary_key=True, index=True)
+    value_a = Column(Float)
+    value_b = Column(Float)
+    result = Column(Float)

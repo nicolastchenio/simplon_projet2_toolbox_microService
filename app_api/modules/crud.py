@@ -1,14 +1,28 @@
 """
-Database connection management.
-
-This module is responsible for configuring and creating the connection
-to the database using SQLAlchemy.
-
-It defines:
-- the database engine
-- the session factory
-- utilities used by the API to interact with the database
-
-During development, the database may be SQLite. In production,
-the configuration can be switched to PostgreSQL.
+CRUD operations for the database.
 """
+
+from sqlalchemy.orm import Session
+from app_api.models.models import Data
+
+
+def create_data(db: Session, value_a: float, value_b: float, result: float):
+    """
+    Insert new data into the database.
+    """
+
+    data = Data(value_a=value_a, value_b=value_b, result=result)
+
+    db.add(data)
+    db.commit()
+    db.refresh(data)
+
+    return data
+
+
+def get_all_data(db: Session):
+    """
+    Retrieve all stored data from the database.
+    """
+
+    return db.query(Data).all()

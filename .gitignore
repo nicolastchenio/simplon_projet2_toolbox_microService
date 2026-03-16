@@ -30,3 +30,7 @@ Thumbs.db
 
 # Docker
 *.log
+
+# data
+test.db
+*.db
