@@ -9,7 +9,7 @@ import os
 
 import pandas as pd
 
-from .modules.mon_module import add, print_data, square, sub
+from .maths.mon_module import add, print_data, square, sub
 
 CSV_FILE_PATH = os.path.join(os.path.dirname(__file__), "moncsv.csv")
 

@@ -3,7 +3,7 @@
 import pandas as pd
 import pytest
 
-from app.modules.mon_module import add, print_data, square, sub
+from app_api.maths.mon_module import add, print_data, square, sub
 
 
 @pytest.mark.parametrize(

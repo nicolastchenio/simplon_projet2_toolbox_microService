@@ -1,6 +1,6 @@
 import pandas as pd
 
-from app.main import execute_operations, main
+from app_api.main import execute_operations, main
 
 
 def test_execute_operations_with_multiple_rows(capsys):
