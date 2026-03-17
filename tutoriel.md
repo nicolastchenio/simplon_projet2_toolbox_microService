@@ -510,9 +510,60 @@ http://127.0.0.1:8000
 ```
 cd app_front
 .venv\Scripts\activate
+cd ..
 uv run streamlit run main.py
 ```
 
 Interface :
 
 http://localhost:8501
+
+- modification de fichier pour interger resultat
+=> suppression de testSquilte.db 
+=> recrer le fichier testSquilte.db:
+
+```
+cd app_api
+uv add pandas
+uv sync
+.venv\Scripts\activate   # activer ton environnement
+uv run uvicorn main:app --reload
+```
+
+```
+curl -X POST "http://127.0.0.1:8000/operations/?operation=add&a=10&b=5" -H "accept: application/json"
+curl -X POST "http://127.0.0.1:8000/operations/?operation=square&a=7" -H "accept: application/json"
+curl -X GET "http://127.0.0.1:8000/operations/" -H "accept: application/json"
+curl -X PUT "http://127.0.0.1:8000/operations/1?operation=sub&a=20&b=3" -H "accept: application/json"
+curl -X DELETE "http://127.0.0.1:8000/operations/1" -H "accept: application/json"
+```
+
+commandes powershell pour tester
+
+$response = Invoke-WebRequest `
+    -Uri "http://127.0.0.1:8000/operations/?operation=add&a=10&b=5" `
+    -Method POST `
+    -Headers @{ "accept" = "application/json" }
+
+$response.Content | ConvertFrom-Json
+
+$response = Invoke-WebRequest `
+    -Uri "http://127.0.0.1:8000/operations/?operation=add&a=10&b=5" `
+    -Method POST `
+    -Headers @{ "accept" = "application/json" }
+
+$response.Content | ConvertFrom-Json
+
+$response = Invoke-WebRequest `
+    -Uri "http://127.0.0.1:8000/operations/1?operation=sub&a=20&b=3" `
+    -Method PUT `
+    -Headers @{ "accept" = "application/json" }
+
+$response.Content | ConvertFrom-Json
+
+$response = Invoke-WebRequest `
+    -Uri "http://127.0.0.1:8000/operations/1" `
+    -Method DELETE `
+    -Headers @{ "accept" = "application/json" }
+
+$response.Content | ConvertFrom-Json
