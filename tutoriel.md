@@ -570,6 +570,9 @@ Solution : Utiliser les "Workspaces" de uv (La plus élégante)
    2. Mettre à jour le fichier ci.yml pour qu'il utilise ce nouvel environnement.
         modifier "uv run pytest --cov=. --cov-report=xml" pour mettre a la place "uv run pytest --cov-report=xml"
 
-
+il y avait des probleme j ai du faire des modifications dans "app_api/pyproject.toml" et "app_front/pyproject.toml"
+   1. app_api utilise maintenant pandas < 3, ce qui lui permet de cohabiter avec le Front (Streamlit).
+   2. Tous les fichiers (pyproject.toml racine, API et Front) indiquent désormais une plage de version Python 3.11 ou 3.12 (>=3.11, <3.13). Cela
+      empêche uv de bloquer sur des versions futures comme la 3.14.
 
 ------
