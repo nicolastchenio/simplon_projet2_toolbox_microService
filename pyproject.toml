@@ -4,10 +4,18 @@ version = "0.1.0"
 description = "Monorepo regroupant l'API et le Front"
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
-dependencies = []
+# La racine dépend des membres pour que leurs bibliothèques soient installées
+dependencies = [
+    "app-api",
+    "app-front",
+]
 
 [tool.uv.workspace]
 members = ["app_api", "app_front"]
+
+[tool.uv.sources]
+app-api = { workspace = true }
+app-front = { workspace = true }
 
 [dependency-groups]
 dev = [
@@ -19,6 +27,11 @@ dev = [
     "furo",
     "myst-parser",
     "httpx",
+    # On ajoute explicitement les librairies majeures au groupe dev de la racine
+    "fastapi",
+    "pandas",
+    "sqlalchemy",
+    "streamlit",
 ]
 
 [tool.ruff]
