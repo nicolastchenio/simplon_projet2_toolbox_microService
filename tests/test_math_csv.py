@@ -3,7 +3,7 @@
 import pandas as pd
 import pytest
 
-from app_api.maths.mon_module import add, print_data, square, sub
+from app_api.maths.mon_module import add, print_data, square, sub, compute_result
 
 
 @pytest.mark.parametrize(
@@ -48,14 +48,33 @@ def test_square(a, expected):
     assert square(a) == expected
 
 
+@pytest.mark.parametrize(
+    "operation, a, b, expected",
+    [
+        ("add", 10, 5, 15),
+        ("sub", 10, 5, 5),
+        ("square", 4, None, 16),
+    ],
+)
+def test_compute_result_success(operation, a, b, expected):
+    """Test compute_result with supported operations."""
+    assert compute_result(operation, a, b) == expected
+
+
+def test_compute_result_invalid_operation():
+    """Test compute_result with an unsupported operation."""
+    with pytest.raises(ValueError, match="Unsupported operation: invalid"):
+        compute_result("invalid", 1, 2)
+
+
 @pytest.fixture
 def sample_dataframe():
     """Provide a temporary DataFrame for testing."""
     return pd.DataFrame(
         {
-            "operation": ["add", "sub", "square"],
-            "a": [1, 5, 3],
-            "b": [2, 1, None],
+            "operation": ["add", "sub", "square", "add", "square"],
+            "a": [1, 5, 3, 0, -2],
+            "b": [2, 1, None, None, None],
         }
     )
 
@@ -63,4 +82,34 @@ def sample_dataframe():
 def test_print_data(sample_dataframe):
     """Test that print_data returns the correct number of rows."""
     rows = print_data(sample_dataframe)
-    assert rows == 3
+    assert rows == len(sample_dataframe)
+
+
+def test_operations_with_nan_and_zero(capsys):
+    """Test handling of None/NaN values and zero in operations."""
+    df = pd.DataFrame(
+        {
+            "operation": ["add", "sub", "square", "add", "sub"],
+            "a": [1, 0, 4, 0, -3],
+            "b": [None, None, None, 5, 0],
+        }
+    )
+
+    # execute operations and capture printed output
+    print_data(df)
+    captured = capsys.readouterr()
+    # check key output lines
+    assert "add" in captured.out
+    assert "sub" in captured.out
+    assert "square" in captured.out
+
+
+def test_combined_operations(sample_dataframe, capsys):
+    """Test executing all operations in a DataFrame."""
+    print_data(sample_dataframe)
+    captured = capsys.readouterr()
+
+    # verify that output is produced
+    assert "add" in captured.out
+    assert "sub" in captured.out
+    assert "square" in captured.out

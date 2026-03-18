@@ -33,6 +33,7 @@ ATTENTION : suite a des probleme de version avec python 3.13 j ai du passer en c
 │
 ├── tests
 │   └── test_math_csv.py
+│   ├── test_api.py
 ```
 et j ai supprimé "test_main.py" du dossier "tests"
 
@@ -510,7 +511,6 @@ http://127.0.0.1:8000
 ```
 cd app_front
 .venv\Scripts\activate
-cd ..
 uv run streamlit run main.py
 ```
 
@@ -538,32 +538,18 @@ curl -X PUT "http://127.0.0.1:8000/operations/1?operation=sub&a=20&b=3" -H "acce
 curl -X DELETE "http://127.0.0.1:8000/operations/1" -H "accept: application/json"
 ```
 
-commandes powershell pour tester
+### Étape 4 — Validez votre API avec Pytest (maths et api) ###
 
-$response = Invoke-WebRequest `
-    -Uri "http://127.0.0.1:8000/operations/?operation=add&a=10&b=5" `
-    -Method POST `
-    -Headers @{ "accept" = "application/json" }
+- creation du fichier test_api.py
+- suppression de test_main.py
+- modification de test_math_csv.py
 
-$response.Content | ConvertFrom-Json
+pour lancer les tests :
+```
+uv run pytest
+```
+ou 
 
-$response = Invoke-WebRequest `
-    -Uri "http://127.0.0.1:8000/operations/?operation=add&a=10&b=5" `
-    -Method POST `
-    -Headers @{ "accept" = "application/json" }
-
-$response.Content | ConvertFrom-Json
-
-$response = Invoke-WebRequest `
-    -Uri "http://127.0.0.1:8000/operations/1?operation=sub&a=20&b=3" `
-    -Method PUT `
-    -Headers @{ "accept" = "application/json" }
-
-$response.Content | ConvertFrom-Json
-
-$response = Invoke-WebRequest `
-    -Uri "http://127.0.0.1:8000/operations/1" `
-    -Method DELETE `
-    -Headers @{ "accept" = "application/json" }
-
-$response.Content | ConvertFrom-Json
+```
+uv run --project app_api pytest --cov=app_api tests/
+```
