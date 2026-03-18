@@ -11,6 +11,8 @@ members = ["app_api", "app_front"]
 
 [dependency-groups]
 dev = [
+    { include-group = "app-api" },
+    { include-group = "app-front" },
     "ruff",
     "pytest",
     "pytest-cov",
