@@ -6,7 +6,10 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("../../app"))
+# Ajouter la racine du projet, app_api et app_front au sys.path pour Sphinx
+sys.path.insert(0, os.path.abspath("../.."))
+sys.path.insert(0, os.path.abspath("../../app_api"))
+sys.path.insert(0, os.path.abspath("../../app_front"))
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information

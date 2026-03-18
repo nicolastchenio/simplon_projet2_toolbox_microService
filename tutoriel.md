@@ -572,7 +572,12 @@ Solution : Utiliser les "Workspaces" de uv (La plus élégante)
 
 il y avait des probleme j ai du faire des modifications dans "app_api/pyproject.toml" et "app_front/pyproject.toml"
    1. app_api utilise maintenant pandas < 3, ce qui lui permet de cohabiter avec le Front (Streamlit).
-   2. Tous les fichiers (pyproject.toml racine, API et Front) indiquent désormais une plage de version Python 3.11 ou 3.12 (>=3.11, <3.13). Cela
-      empêche uv de bloquer sur des versions futures comme la 3.14.
+   2. Tous les fichiers (pyproject.toml racine, API et Front) indiquent désormais une plage de version Python 3.11 ou 3.12 (>=3.11, <3.13). Cela empêche uv de bloquer sur des versions futures comme la 3.14.
+
+il y a avait un probleme avec sphinx car on doit ajouter sphinx et le thème furo (utilisiez dans le projet initial) au groupe de dépendances de développement.
+sphinx et furo ne sont pas dans votre pyproject.toml. On doit les ajouter maintenant à votre dependency-groups.dev afin que uv puisse les installer automatiquement lors de votre CI
+
+Pour que Sphinx puisse générer la documentation de votre API (en lisant vos fichiers .py), il doit savoir où trouver le code. Dans un Workspace uv, nous avons déjà configuré le pythonpath pour Pytest, mais nous devons nous assurer que votre fichier docs/source/conf.py inclut bien la racine dans son chemin de recherche.
+ans votre fichier docs/source/conf.py. Le chemin configuré était sys.path.insert(0, os.path.abspath("../../app")). Or, dans votre nouveau projet, vous n'avez plus de dossier app/ à la racine. Vous avez maintenant app_api/ et app_front/.
 
 ------
