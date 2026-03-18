@@ -553,3 +553,23 @@ ou
 ```
 uv run --project app_api pytest --cov=app_api tests/
 ```
+
+------
+Note personnel :
+
+Probleme quand on push le projet sur les repositorie car actions ne peux pas valider car il ne trouve pas de fichier pyproject.toml a la racine du projet comme c etait le cas dans le projet initiale.
+
+Le passage d'une structure monolithique à une architecture "micro-services" (avec app_api et app_front) a brisé votre configuration CI car uv ne trouve plus de fichier pyproject.toml à la racine pour synchroniser l'environnement.
+
+Solution : Utiliser les "Workspaces" de uv (La plus élégante)
+  C'est la solution recommandée par uv pour gérer plusieurs projets dans un seul dépôt (monorepo). Elle permet de garder un seul
+  environnement virtuel à la racine tout en gérant les dépendances de chaque sous-dossier.
+
+  Actions à réaliser :
+   1. Créer un pyproject.toml à la racine pour déclarer le "Workspace" et centraliser les outils de développement (Ruff, Pytest).
+   2. Mettre à jour le fichier ci.yml pour qu'il utilise ce nouvel environnement.
+        modifier "uv run pytest --cov=. --cov-report=xml" pour mettre a la place "uv run pytest --cov-report=xml"
+
+
+
+------

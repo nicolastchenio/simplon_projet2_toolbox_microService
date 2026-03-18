@@ -1,0 +1,33 @@
+[project]
+name = "simplon-toolbox-monorepo"
+version = "0.1.0"
+description = "Monorepo regroupant l'API et le Front"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.uv.workspace]
+members = ["app_api", "app_front"]
+
+[dependency-groups]
+dev = [
+    "ruff",
+    "pytest",
+    "pytest-cov",
+    "genbadge[coverage]",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "D"] # Erreurs, Warnings, Pyflakes, Isort, Docstrings
+ignore = ["D100"] # On autorise l'absence de docstring en tout début de fichier
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+# On cible la couverture sur app_api (ou les deux si besoin)
+addopts = "-v --cov=app_api --cov-report=term-missing"
+pythonpath = ["app_api", "app_front"]
