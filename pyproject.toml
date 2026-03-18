@@ -4,19 +4,10 @@ version = "0.1.0"
 description = "Monorepo regroupant l'API et le Front"
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
-# On déclare que la racine dépend des membres pour le développement
-dependencies = [
-    "app-api",
-    "app-front",
-]
+dependencies = []
 
 [tool.uv.workspace]
 members = ["app_api", "app_front"]
-
-# On indique à uv que ces paquets se trouvent dans le workspace
-[tool.uv.sources]
-app-api = { workspace = true }
-app-front = { workspace = true }
 
 [dependency-groups]
 dev = [
@@ -27,7 +18,7 @@ dev = [
     "sphinx",
     "furo",
     "myst-parser",
-    "httpx", # Requis pour les tests de l'API
+    "httpx",
 ]
 
 [tool.ruff]
