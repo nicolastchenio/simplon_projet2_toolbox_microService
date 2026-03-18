@@ -4,15 +4,22 @@ version = "0.1.0"
 description = "Monorepo regroupant l'API et le Front"
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
-dependencies = []
+# On déclare que la racine dépend des membres pour le développement
+dependencies = [
+    "app-api",
+    "app-front",
+]
 
 [tool.uv.workspace]
 members = ["app_api", "app_front"]
 
+# On indique à uv que ces paquets se trouvent dans le workspace
+[tool.uv.sources]
+app-api = { workspace = true }
+app-front = { workspace = true }
+
 [dependency-groups]
 dev = [
-    { include-group = "app-api" },
-    { include-group = "app-front" },
     "ruff",
     "pytest",
     "pytest-cov",
@@ -20,6 +27,7 @@ dev = [
     "sphinx",
     "furo",
     "myst-parser",
+    "httpx", # Requis pour les tests de l'API
 ]
 
 [tool.ruff]
@@ -33,6 +41,6 @@ ignore = ["D100"] # On autorise l'absence de docstring en tout début de fichier
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = "test_*.py"
-# On cible la couverture sur app_api (ou les deux si besoin)
+# On cible la couverture sur app_api
 addopts = "-v --cov=app_api --cov-report=term-missing"
 pythonpath = ["app_api", "app_front"]
