@@ -1,13 +1,13 @@
-"""
-Database connection configuration using SQLAlchemy.
+"""Database connection configuration using SQLAlchemy.
 
 This module initializes the database engine and session used by the API.
 The application uses a local SQLite database stored in app_api/data/.
 """
 
 import os
+
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 # Définir le chemin du fichier SQLite
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -31,11 +31,11 @@ Base = declarative_base()
 
 
 def get_db():
-    """
-    Dependency function to provide a database session.
+    """Dependency function to provide a database session.
 
     Yields:
         Session: SQLAlchemy session
+
     """
     db = SessionLocal()
     try:

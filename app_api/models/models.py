@@ -1,15 +1,15 @@
-"""
-ORM models for the application.
+"""ORM models for the application.
 
-Defines the Operation table to store mathematical operations, including the computed result.
+Defines the Operation table to store mathematical operations with results.
 """
 
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, Float, Integer, String
+
 from ..modules.connect import Base  # importer Base depuis connect
 
+
 class Operation(Base):
-    """
-    SQLAlchemy ORM model for a mathematical operation.
+    """SQLAlchemy ORM model for a mathematical operation.
 
     Attributes:
         id (int): Primary key.
@@ -17,7 +17,9 @@ class Operation(Base):
         a (float): First operand.
         b (float | None): Second operand (optional for square).
         result (float | None): Computed result of the operation.
+
     """
+
     __tablename__ = "operations"
     __table_args__ = {"extend_existing": True}  # Evite l'erreur "table already defined"
 

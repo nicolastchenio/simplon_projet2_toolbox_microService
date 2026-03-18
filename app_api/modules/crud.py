@@ -1,17 +1,16 @@
-"""
-CRUD operations for the Operation model with automatic result calculation.
+"""CRUD operations for the Operation model with automatic result calculation.
 
 Provides functions to insert, retrieve, update, and delete operations from the database.
 """
 
 from sqlalchemy.orm import Session
+
+from app_api.maths.mon_module import add, square, sub
 from app_api.models.models import Operation
-from app_api.maths.mon_module import add, sub, square
 
 
 def calculate_result(operation: str, a: float, b: float | None = None) -> float:
-    """
-    Calculate the result of a mathematical operation.
+    """Calculate the result of a mathematical operation.
 
     Args:
         operation (str): Operation type ("add", "sub", "square").
@@ -20,6 +19,7 @@ def calculate_result(operation: str, a: float, b: float | None = None) -> float:
 
     Returns:
         float: Result of the operation.
+
     """
     if operation == "add":
         if b is None:
@@ -35,9 +35,10 @@ def calculate_result(operation: str, a: float, b: float | None = None) -> float:
         raise ValueError(f"Unknown operation '{operation}'.")
 
 
-def create_data(db: Session, operation: str, a: float, b: float | None = None) -> Operation:
-    """
-    Insert a new operation into the database with computed result.
+def create_data(
+    db: Session, operation: str, a: float, b: float | None = None
+) -> Operation:
+    """Insert a new operation into the database with computed result.
 
     Args:
         db (Session): Database session
@@ -47,6 +48,7 @@ def create_data(db: Session, operation: str, a: float, b: float | None = None) -
 
     Returns:
         Operation: The newly created Operation object
+
     """
     result = calculate_result(operation, a, b)
     db_operation = Operation(operation=operation, a=a, b=b, result=result)
@@ -57,21 +59,20 @@ def create_data(db: Session, operation: str, a: float, b: float | None = None) -
 
 
 def get_all_data(db: Session) -> list[Operation]:
-    """
-    Retrieve all operations from the database.
+    """Retrieve all operations from the database.
 
     Args:
         db (Session): Database session
 
     Returns:
         list[Operation]: List of Operation objects
+
     """
     return db.query(Operation).all()
 
 
 def get_operation(db: Session, operation_id: int) -> Operation | None:
-    """
-    Retrieve a single operation by ID.
+    """Retrieve a single operation by ID.
 
     Args:
         db (Session): Database session
@@ -79,13 +80,15 @@ def get_operation(db: Session, operation_id: int) -> Operation | None:
 
     Returns:
         Operation | None: The operation object or None if not found
+
     """
     return db.query(Operation).filter(Operation.id == operation_id).first()
 
 
-def update_operation(db: Session, operation_id: int, operation: str, a: float, b: float | None = None) -> Operation:
-    """
-    Update an existing operation and recalculate result.
+def update_operation(
+    db: Session, operation_id: int, operation: str, a: float, b: float | None = None
+) -> Operation:
+    """Update an existing operation and recalculate result.
 
     Args:
         db (Session): Database session
@@ -99,6 +102,7 @@ def update_operation(db: Session, operation_id: int, operation: str, a: float, b
 
     Raises:
         ValueError: If operation ID does not exist
+
     """
     db_operation = get_operation(db, operation_id)
     if not db_operation:
@@ -114,8 +118,7 @@ def update_operation(db: Session, operation_id: int, operation: str, a: float, b
 
 
 def delete_operation(db: Session, operation_id: int) -> bool:
-    """
-    Delete an operation from the database.
+    """Delete an operation from the database.
 
     Args:
         db (Session): Database session
@@ -123,6 +126,7 @@ def delete_operation(db: Session, operation_id: int) -> bool:
 
     Returns:
         bool: True if deleted, False if not found
+
     """
     db_operation = get_operation(db, operation_id)
     if not db_operation:

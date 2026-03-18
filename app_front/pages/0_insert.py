@@ -1,5 +1,4 @@
-"""
-Streamlit page used to insert mathematical operations.
+"""Streamlit page used to insert mathematical operations.
 
 This page provides a form allowing the user to create a new
 mathematical operation. The operation is sent to the FastAPI backend
@@ -13,8 +12,8 @@ Supported operations:
 The backend API stores the operation in a SQLite database.
 """
 
-import streamlit as st
 import requests
+import streamlit as st
 
 API_URL = "http://127.0.0.1:8000/operations/"
 

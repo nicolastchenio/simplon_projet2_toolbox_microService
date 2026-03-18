@@ -1,5 +1,4 @@
-"""
-Database interaction modules.
+"""Database interaction modules.
 
 This package contains the components responsible for interacting with the
 database through SQLAlchemy.

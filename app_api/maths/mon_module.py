@@ -1,5 +1,4 @@
-"""
-Business logic module containing basic mathematical operations.
+"""Business logic module containing basic mathematical operations.
 
 This module provides functions to perform simple mathematical operations
 (addition, subtraction, square) and utilities for working with pandas
@@ -10,6 +9,7 @@ based on its name.
 """
 
 from typing import Union
+
 import pandas as pd
 
 Number = Union[int, float]
@@ -24,6 +24,7 @@ def add(a: Number, b: Number) -> Number:
 
     Returns:
         Number: Sum of a and b.
+
     """
     return a + b
 
@@ -37,6 +38,7 @@ def sub(a: Number, b: Number) -> Number:
 
     Returns:
         Number: Result of a minus b.
+
     """
     return a - b
 
@@ -49,6 +51,7 @@ def square(a: Number) -> Number:
 
     Returns:
         Number: Square of a.
+
     """
     return a * a
 
@@ -74,8 +77,8 @@ def compute_result(operation: str, a: Number, b: Number | None = None) -> Number
 
     Raises:
         ValueError: If the operation name is not supported.
-    """
 
+    """
     if operation == "add":
         return add(a, b)
 
@@ -97,6 +100,7 @@ def print_data(df: pd.DataFrame) -> int:
 
     Returns:
         int: Number of rows in the DataFrame.
+
     """
     print(df)
     return len(df)

@@ -1,10 +1,10 @@
 """Test suite for the FastAPI application and CRUD operations."""
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-import pytest
 
 # Assurez-vous d'exécuter pytest depuis la racine du projet
 from app_api.main import app
@@ -26,7 +26,7 @@ Base.metadata.create_all(bind=engine)
 
 # --- Override de la dépendance get_db ---
 def override_get_db():
-    """Provides a database session for testing."""
+    """Provide a database session for testing."""
     db = TestingSessionLocal()
     try:
         yield db
@@ -100,7 +100,9 @@ def test_list_operations():
 def test_update_operation_success():
     """Vérifie la mise à jour d'une opération existante."""
     # D'abord on crée
-    resp_create = client.post("/operations/", params={"operation": "add", "a": 1, "b": 1})
+    resp_create = client.post(
+        "/operations/", params={"operation": "add", "a": 1, "b": 1}
+    )
     op_id = resp_create.json()["id"]
 
     # Ensuite on met à jour

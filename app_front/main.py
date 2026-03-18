@@ -1,5 +1,4 @@
-"""
-Streamlit application entry point.
+"""Streamlit application entry point.
 
 This module initializes the main interface of the frontend application.
 It provides a simple landing page explaining the purpose of the app.

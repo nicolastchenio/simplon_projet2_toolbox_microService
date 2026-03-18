@@ -1,5 +1,4 @@
-"""
-Streamlit page used to display stored operations.
+"""Streamlit page used to display stored operations.
 
 This page retrieves all mathematical operations stored in the
 database by calling the FastAPI backend API.
@@ -8,9 +7,9 @@ The retrieved data is displayed in a tabular format using
 a pandas DataFrame.
 """
 
-import streamlit as st
-import requests
 import pandas as pd
+import requests
+import streamlit as st
 
 API_URL = "http://127.0.0.1:8000/operations/"
 

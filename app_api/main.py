@@ -1,14 +1,17 @@
-"""
-FastAPI application entry point.
+"""FastAPI application entry point.
 
 Provides API endpoints to insert, update, delete, and list mathematical operations.
 """
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
+
 from app_api.modules.connect import Base, engine, get_db
 from app_api.modules.crud import (
-    create_data, get_all_data, update_operation, delete_operation
+    create_data,
+    delete_operation,
+    get_all_data,
+    update_operation,
 )
 
 # Création des tables
@@ -16,27 +19,28 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-
 def serialize_operation(op):
-    """
-    Convert SQLAlchemy object to JSON serializable dict.
-    """
+    """Convert SQLAlchemy object to JSON serializable dict."""
     return {
         "id": op.id,
         "operation": op.operation,
         "a": op.a,
         "b": op.b,
-        "result": op.result
+        "result": op.result,
     }
 
 
 @app.get("/")
 def read_root():
+    """Root endpoint to check if API is running."""
     return {"message": "API is running"}
 
 
 @app.post("/operations/")
-def add_operation(operation: str, a: float, b: float | None = None, db: Session = Depends(get_db)):
+def add_operation(
+    operation: str, a: float, b: float | None = None, db: Session = Depends(get_db)
+):
+    """Insert a new mathematical operation."""
     try:
         op = create_data(db, operation, a, b)
         return serialize_operation(op)
@@ -46,12 +50,20 @@ def add_operation(operation: str, a: float, b: float | None = None, db: Session 
 
 @app.get("/operations/")
 def list_operations(db: Session = Depends(get_db)):
+    """List all stored operations."""
     operations = get_all_data(db)
     return [serialize_operation(op) for op in operations]
 
 
 @app.put("/operations/{operation_id}")
-def update_operation_endpoint(operation_id: int, operation: str, a: float, b: float | None = None, db: Session = Depends(get_db)):
+def update_operation_endpoint(
+    operation_id: int,
+    operation: str,
+    a: float,
+    b: float | None = None,
+    db: Session = Depends(get_db),
+):
+    """Update an existing operation."""
     try:
         op = update_operation(db, operation_id, operation, a, b)
         return serialize_operation(op)
@@ -61,7 +73,9 @@ def update_operation_endpoint(operation_id: int, operation: str, a: float, b: fl
 
 @app.delete("/operations/{operation_id}")
 def delete_operation_endpoint(operation_id: int, db: Session = Depends(get_db)):
+    """Delete an operation by ID."""
     success = delete_operation(db, operation_id)
     if not success:
         raise HTTPException(status_code=404, detail="Operation not found")
     return {"message": "Operation deleted"}
+

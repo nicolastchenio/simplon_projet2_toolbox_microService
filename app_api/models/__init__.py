@@ -1,5 +1,4 @@
-"""
-Pydantic models package.
+"""Pydantic models package.
 
 This package defines the data schemas used by the FastAPI application.
 
