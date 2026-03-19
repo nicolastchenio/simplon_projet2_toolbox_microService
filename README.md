@@ -1,7 +1,7 @@
 # Simplon Projet 2 – Toolbox Microservice
 
 ![CI Status](https://github.com/nicolastchenio/simplon_projet2_toolbox_microService/actions/workflows/ci.yml/badge.svg)
-![Coverage](https://raw.githubusercontent.com/nnicolastchenio/simplon_projet2_toolbox_microService/main/coverage.svg)
+![Coverage](https://raw.githubusercontent.com/nicolastchenio/simplon_projet2_toolbox_microService/main/coverage.svg)
 ![Python](https://img.shields.io/badge/python-3.11-blue)
 ![Lint](https://img.shields.io/badge/lint-ruff-purple)
 ![License](https://img.shields.io/badge/license-MIT-green)
