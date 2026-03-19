@@ -5,23 +5,23 @@ The application uses a local SQLite database stored in app_api/data/.
 """
 
 import os
+from dotenv import load_dotenv
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-# Définir le chemin du fichier SQLite
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DB_PATH = os.path.join(BASE_DIR, "data", "testsqlite.db")
-os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+# Charger les variables d'environnement
+load_dotenv()
 
-# URL de connexion SQLAlchemy pour SQLite
-SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_PATH}"
+# URL de connexion PostgreSQL (host 'db' pour Docker Compose)
+DATABASE_URL = (
+    f"postgresql+psycopg2://{os.getenv('POSTGRES_USER')}:"
+    f"{os.getenv('POSTGRES_PASSWORD')}@db:{os.getenv('POSTGRES_PORT', 5432)}/"
+    f"{os.getenv('POSTGRES_DB')}"
+)
 
 # Création de l'engine
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False}  # requis pour SQLite et threads multiples
-)
+engine = create_engine(DATABASE_URL)
 
 # Session locale pour les transactions
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

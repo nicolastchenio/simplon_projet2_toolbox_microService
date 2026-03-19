@@ -7,11 +7,18 @@ The retrieved data is displayed in a tabular format using
 a pandas DataFrame.
 """
 
+import os
 import pandas as pd
 import requests
 import streamlit as st
+from dotenv import load_dotenv
 
-API_URL = "http://127.0.0.1:8000/operations/"
+# Charger les variables d'environnement
+load_dotenv()
+
+# Lire l'hôte de l'API depuis l'environnement
+API_HOST = os.getenv("API_HOST", "127.0.0.1")
+API_URL = f"http://{API_HOST}:8000/data"
 
 st.title("Stored Mathematical Operations")
 

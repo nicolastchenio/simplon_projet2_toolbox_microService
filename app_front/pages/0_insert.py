@@ -12,10 +12,17 @@ Supported operations:
 The backend API stores the operation in a SQLite database.
 """
 
+import os
 import requests
 import streamlit as st
+from dotenv import load_dotenv
 
-API_URL = "http://127.0.0.1:8000/operations/"
+# Charger les variables d'environnement
+load_dotenv()
+
+# Lire l'hôte de l'API depuis l'environnement
+API_HOST = os.getenv("API_HOST", "127.0.0.1")
+API_URL = f"http://{API_HOST}:8000/data"
 
 st.title("Insert a Mathematical Operation")
 

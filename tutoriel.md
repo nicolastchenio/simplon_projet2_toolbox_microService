@@ -594,3 +594,78 @@ ans votre fichier docs/source/conf.py. Le chemin configuré était sys.path.inse
 6. Correction de app_api/models/models.py en remplaçant l'import relatif par un import absolu (from app_api.modules.connect import Base).
 7. Mise à jour des fichiers .rst (mon_module.rst, api_db.rst, models.rst) pour utiliser les chemins de modules complets (ex: app_api.maths.mon_module).
 8. Reconstruction complète de la documentation.
+
+## phase B ##
+
+1. Créer un fichier .env dans la racine du projet (ou dans app_api) pour stocker les paramètres sensibles, par exemple :
+```
+# .env
+API_HOST=127.0.0.1
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=mydb
+POSTGRES_PORT=5432
+```
+
+2. Créer .env.example (version template à partager sur GitHub) :
+```
+# .env.example
+API_HOST=
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+POSTGRES_DB=
+POSTGRES_PORT=
+```
+3. Mettre à jour ton code pour utiliser ces variables :
+- Dans app_api/modules/connect.py :
+```
+"""Database connection configuration using SQLAlchemy.
+
+This module initializes the database engine and session used by the API.
+The application uses a local SQLite database stored in app_api/data/.
+"""
+
+import os
+from dotenv import load_dotenv
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
+
+# Charger les variables d'environnement
+load_dotenv()
+
+# URL de connexion PostgreSQL (host 'db' pour Docker Compose)
+DATABASE_URL = (
+    f"postgresql+psycopg2://{os.getenv('POSTGRES_USER')}:"
+    f"{os.getenv('POSTGRES_PASSWORD')}@db:{os.getenv('POSTGRES_PORT', 5432)}/"
+    f"{os.getenv('POSTGRES_DB')}"
+)
+
+# Création de l'engine
+engine = create_engine(DATABASE_URL)
+
+# Session locale pour les transactions
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Base pour la définition des modèles
+Base = declarative_base()
+
+
+def get_db():
+    """Dependency function to provide a database session.
+
+    Yields:
+        Session: SQLAlchemy session
+
+    """
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+```
+
+-Mise à jour de main.py : les routes sont passées de /operations/ à /data.
+- Frontend (app_front) :
+    Mise à jour des pages 0_insert.py et 1_read.py pour utiliser API_HOST et la nouvelle route /data.
+- Hygiène : Vérification que .env et .venv sont bien ignorés (je les ai ajoutés au .gitignore et .dockerignore).

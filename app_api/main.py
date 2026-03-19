@@ -36,7 +36,7 @@ def read_root():
     return {"message": "API is running"}
 
 
-@app.post("/operations/")
+@app.post("/data")
 def add_operation(
     operation: str, a: float, b: float | None = None, db: Session = Depends(get_db)
 ):
@@ -48,14 +48,14 @@ def add_operation(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@app.get("/operations/")
+@app.get("/data")
 def list_operations(db: Session = Depends(get_db)):
     """List all stored operations."""
     operations = get_all_data(db)
     return [serialize_operation(op) for op in operations]
 
 
-@app.put("/operations/{operation_id}")
+@app.put("/data/{operation_id}")
 def update_operation_endpoint(
     operation_id: int,
     operation: str,
@@ -71,7 +71,7 @@ def update_operation_endpoint(
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@app.delete("/operations/{operation_id}")
+@app.delete("/data/{operation_id}")
 def delete_operation_endpoint(operation_id: int, db: Session = Depends(get_db)):
     """Delete an operation by ID."""
     success = delete_operation(db, operation_id)
