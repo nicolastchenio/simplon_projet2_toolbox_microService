@@ -65,7 +65,7 @@ def test_read_root():
 def test_create_operation_success():
     """Vérifie l'insertion d'une opération valide."""
     response = client.post(
-        "/operations/",
+        "/data/",
         params={"operation": "add", "a": 10.0, "b": 2.0}
     )
     assert response.status_code == 200
@@ -80,7 +80,7 @@ def test_create_operation_error():
     """Vérifie le comportement en cas d'erreur d'opération (ex: paramètre manquant)."""
     # Addition sans paramètre b
     response = client.post(
-        "/operations/",
+        "/data/",
         params={"operation": "add", "a": 10.0}
     )
     assert response.status_code == 400
@@ -89,9 +89,9 @@ def test_create_operation_error():
 def test_list_operations():
     """Vérifie la récupération de la liste des opérations."""
     # S'assurer qu'il y a au moins une donnée
-    client.post("/operations/", params={"operation": "square", "a": 5.0})
+    client.post("/data/", params={"operation": "square", "a": 5.0})
 
-    response = client.get("/operations/")
+    response = client.get("/data/")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
@@ -101,13 +101,13 @@ def test_update_operation_success():
     """Vérifie la mise à jour d'une opération existante."""
     # D'abord on crée
     resp_create = client.post(
-        "/operations/", params={"operation": "add", "a": 1, "b": 1}
+        "/data/", params={"operation": "add", "a": 1, "b": 1}
     )
     op_id = resp_create.json()["id"]
 
     # Ensuite on met à jour
     response = client.put(
-        f"/operations/{op_id}",
+        f"/data/{op_id}",
         params={"operation": "sub", "a": 10, "b": 5}
     )
     assert response.status_code == 200
@@ -120,7 +120,7 @@ def test_update_operation_success():
 def test_update_operation_not_found():
     """Vérifie l'erreur 404 lors de la mise à jour d'un ID inexistant."""
     response = client.put(
-        "/operations/9999",
+        "/data/9999",
         params={"operation": "add", "a": 1, "b": 1}
     )
     assert response.status_code == 404
@@ -128,20 +128,20 @@ def test_update_operation_not_found():
 def test_delete_operation_success():
     """Vérifie la suppression d'une opération."""
     # Création
-    resp_create = client.post("/operations/", params={"operation": "square", "a": 3})
+    resp_create = client.post("/data/", params={"operation": "square", "a": 3})
     op_id = resp_create.json()["id"]
 
     # Suppression
-    response = client.delete(f"/operations/{op_id}")
+    response = client.delete(f"/data/{op_id}")
     assert response.status_code == 200
     assert response.json() == {"message": "Operation deleted"}
 
     # Vérification qu'elle n'est plus là
-    resp_list = client.get("/operations/")
+    resp_list = client.get("/data/")
     ids = [op["id"] for op in resp_list.json()]
     assert op_id not in ids
 
 def test_delete_operation_not_found():
     """Vérifie l'erreur 404 lors de la suppression d'un ID inexistant."""
-    response = client.delete("/operations/9999")
+    response = client.delete("/data/9999")
     assert response.status_code == 404

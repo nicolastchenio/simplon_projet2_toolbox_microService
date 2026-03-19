@@ -13,15 +13,27 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 # Charger les variables d'environnement
 load_dotenv()
 
-# URL de connexion PostgreSQL (host 'db' pour Docker Compose)
-DATABASE_URL = (
-    f"postgresql+psycopg2://{os.getenv('POSTGRES_USER')}:"
-    f"{os.getenv('POSTGRES_PASSWORD')}@db:{os.getenv('POSTGRES_PORT', 5432)}/"
-    f"{os.getenv('POSTGRES_DB')}"
-)
+# On vérifie d'abord si DATABASE_URL est déjà dans l'environnement (ex: par les tests)
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+# Si non, on tente de construire l'URL PostgreSQL à partir du .env
+if not DATABASE_URL:
+    DB_USER = os.getenv("POSTGRES_USER")
+    DB_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+    DB_NAME = os.getenv("POSTGRES_DB")
+    DB_PORT = os.getenv("POSTGRES_PORT", "5432")
+    DB_HOST = os.getenv("POSTGRES_HOST", "localhost")
+
+    if DB_USER and DB_NAME:
+        DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    else:
+        # Fallback de secours ultime
+        DATABASE_URL = "sqlite:///./app_api/data/testsqlite.db"
 
 # Création de l'engine
-engine = create_engine(DATABASE_URL)
+# On ajoute check_same_thread uniquement pour SQLite
+connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+engine = create_engine(DATABASE_URL, connect_args=connect_args)
 
 # Session locale pour les transactions
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

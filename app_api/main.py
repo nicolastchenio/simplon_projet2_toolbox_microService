@@ -36,7 +36,7 @@ def read_root():
     return {"message": "API is running"}
 
 
-@app.post("/data")
+@app.post("/data/")
 def add_operation(
     operation: str, a: float, b: float | None = None, db: Session = Depends(get_db)
 ):
@@ -48,7 +48,7 @@ def add_operation(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@app.get("/data")
+@app.get("/data/")
 def list_operations(db: Session = Depends(get_db)):
     """List all stored operations."""
     operations = get_all_data(db)
