@@ -13,6 +13,7 @@ The backend API stores the operation in a SQLite database.
 """
 
 import os
+
 import requests
 import streamlit as st
 from dotenv import load_dotenv
