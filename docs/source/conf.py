@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath("../../app_front"))
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'Toolbox'
+project = 'Toolbox microservice'
 copyright = '2026, Nicolas Tchenio'
 author = 'Nicolas Tchenio'
 release = '1.0.0'
@@ -40,5 +40,5 @@ exclude_patterns = []
 
 html_theme = 'furo'
 html_static_path = ['_static']
-html_logo = "_static/img/logo.png"
-html_title = "Documentation - Toolbox"
+html_logo = "_static/img/logo_toolbox_microservice.jpg"
+html_title = "Documentation - Toolbox microservice"

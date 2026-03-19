@@ -1,26 +1,22 @@
-# Simplon Projet 1 – Python Toolbox
+# Simplon Projet 2 – Toolbox Microservice
 
-![CI Status](https://github.com/nicolastchenio/simplon_projet1_toolbox/actions/workflows/ci.yml/badge.svg)
-![Coverage](https://raw.githubusercontent.com/nicolastchenio/simplon_projet1_toolbox/main/coverage.svg)
+![CI Status](https://github.com/nicolastchenio/simplon_projet2_toolbox_microService/actions/workflows/ci.yml/badge.svg)
+![Coverage](https://raw.githubusercontent.com/nnicolastchenio/simplon_projet2_toolbox_microService/main/coverage.svg)
 ![Python](https://img.shields.io/badge/python-3.11-blue)
 ![Lint](https://img.shields.io/badge/lint-ruff-purple)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-
 ## Overview
 
-**Python Toolbox** is a small modular Python project designed to demonstrate good software engineering practices:
+**Python Toolbox Microservice** est une évolution du projet initial vers une architecture modulaire et distribuée. Ce projet démontre la mise en place d'une architecture micro-services complète, sécurisée et orchestrée :
 
-- modular Python architecture
-- unit testing with Pytest
-- code coverage measurement with pytest-cov
-- static code analysis with Ruff
-- dependency management with uv
-- CI/CD integration
-
-The application reads a CSV file describing mathematical operations and executes them using a dedicated business logic module.
-
-This repository is structured to follow professional Python project standards used in modern data and MLOps environments.
+- **Architecture Monorepo** gérée avec `uv`.
+- **Backend API** performant avec FastAPI.
+- **Frontend Interactif** avec Streamlit.
+- **Persistance des données** (PostgreSQL / SQLite).
+- **Tests unitaires et d'intégration** avec Pytest.
+- **Qualité de code** via Ruff.
+- **CI/CD & Sécurité** : Scan de secrets (Gitleaks) et déploiement automatisé.
 
 ---
 
@@ -30,172 +26,127 @@ This repository is structured to follow professional Python project standards us
 .
 ├── .github/                    
 │   ├── workflows/
-│   │   ├── ci.yml
-│   │   └── docs.yml
+│   │   ├── ci.yml             # Linting, Tests, Gitleaks
+│   │   └── docs.yml           # Documentation Sphinx
 │   └── CODE_OF_CONDUCT.md
 │   └── CONTRIBUTING.md          
-├── app/                    
-│   ├── modules/           
-│   │   ├── __init__.py
-│   │   └── mon_module.py
-│   ├── main.py            
-│   └── moncsv.csv
-│   └── __init__.py        
-├── tests/                 
-│   └── test_main.py
+├── app_api/                   # Service Backend (FastAPI)
+│   ├── maths/                 # Logique métier mathématique
+│   ├── models/                # Modèles de données (Pydantic/SQLAlchemy)
+│   ├── modules/               # Connexion et CRUD
+│   ├── data/                  # Données statiques (CSV)
+│   └── main.py                # Point d'entrée de l'API
+├── app_front/                 # Service Frontend (Streamlit)
+│   ├── pages/                 # Pages de saisie et d'affichage
+│   └── main.py                # Point d'entrée du Front
+├── tests/                     # Tests globaux (API et Logique)
+│   ├── test_api.py
 │   └── test_math_csv.py   
-├── docs/ 
+├── docs/                      # Documentation technique (Sphinx)
 ├── .dockerignore 
 ├── .gitignore 
-├── .gitignore                      
-├── pyproject.toml         
+├── pyproject.toml             # Configuration du Monorepo (uv workspace)
 ├── uv.lock                    
 ├── README.md
 └── LICENSE
-
 ```
-
 
 ---
 
 ## Installation
 
-This project uses **uv** for dependency management and environment synchronization.
+Ce projet utilise **uv** pour la gestion des dépendances et de l'espace de travail (workspace).
 
-### 1. Install uv
-
-```
+### 1. Prérequis
+Assurez-vous d'avoir `uv` installé :
+```bash
 pip install uv
 ```
 
-### 2. Clone the repository
+### 2. Cloner le dépôt
+```bash
+git clone https://github.com/nicolastchenio/simplon_projet2_toolbox-microservice.git
+cd simplon_projet2_toolbox-microservice
 ```
-git clone https://github.com/USER/REPO.git
 
-cd REPO
-```
-
-### 3. Install dependencies
-```
+### 3. Synchroniser l'environnement
+Depuis la racine du projet :
+```bash
 uv sync
 ```
-
-This command will:
-
-- create the virtual environment
-- install all dependencies defined in `pyproject.toml`
-- synchronize the environment with the project configuration
+Cette commande installe les dépendances pour tous les membres de l'espace de travail (`app_api` et `app_front`).
 
 ---
 
-## Running the Application
+## Running the Application (Local)
+
+Le projet nécessite le lancement de deux services distincts dans deux terminaux différents depuis la racine du projet.
+
+### 1. Terminal 1 : Backend API (FastAPI)
+```bash
+# Lancer l'API avec rechargement automatique (Hot Reload)
+uv run uvicorn app_api.main:app --reload
 ```
-uv run python -m app.main
+- **API** : [http://127.0.0.1:8000](http://127.0.0.1:8000)
+- **Documentation interactive (Swagger)** : [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+
+### 2. Terminal 2 : Frontend (Streamlit)
+```bash
+# Se déplacer dans le dossier front et lancer l'interface
+cd app_front
+uv run streamlit run main.py
 ```
----
-
-## Docker
-
-This project can be run inside a Docker container for portability and reproducibility.
-
-### 1. Build the Docker image
-
-At the root of the repository, run:
-```
-docker build -t projet1-toolbox:1.0.0 .
-```
-This will:
-
-Use Python 3.11 slim as base
-
-Copy the project files and install dependencies using uv
-
-Prepare the container to run the application
-
-### 2. Run the container
-
-Expose the application on a local port (example: 8000):
-```
-docker run -p 8000:5000 projet1-toolbox:1.0.0
-```
--p 8000:5000 maps port 5000 in the container to 8000 on your host
-
-The application will execute and display the CSV operations as usual
-
-### 3. Notes
-
-The Dockerfile uses CMD ["python", "-m", "app.main"] to allow relative imports to work properly.
-
-To rebuild the image after code changes, run docker build again.
-
-This approach ensures a consistent environment across machines without manual Python setup.
+- **Interface Utilisateur** : [http://localhost:8501](http://localhost:8501)
 
 ---
 
 ## Running Tests
 
-Execute the test suite with:
-```
+Exécutez la suite complète de tests depuis la racine :
+```bash
 uv run pytest
 ```
 
-To run tests with coverage:
+Pour générer un rapport de couverture :
+```bash
+uv run pytest --cov=app_api --cov-report=term-missing
+```
 
-```
-uv run pytest --cov=app --cov-report=term-missing
-```
+---
 
 ## Code Quality
 
-This project uses **Ruff** for linting and code quality checks.
+Nous utilisons **Ruff** pour le linting et la mise en conformité du code :
 
-Run linting with
-
-```
+```bash
 uv run ruff check .
 ```
+
 ---
 
-## Continuous Integration
+## Continuous Integration & Security
 
-The project integrates a CI pipeline that automatically:
+Le projet intègre une pipeline CI/CD robuste :
 
-- runs tests
-- checks code coverage
-- performs linting
-
-The CI status badge at the top of this README reflects the latest build status.
+- **Tests & Linting** : Lancés à chaque commit.
+- **Sécurité (Gitleaks)** : Vérification automatique de l'absence de secrets ou clés API dans l'historique Git.
+- **Documentation** : Génération automatique de la documentation Sphinx.
 
 ---
 
 ## Contributing
 
-Contributions are welcome.
-
-Please read the contributing guidelines before submitting a pull request:
-
-See **CONTRIBUTING.md**
-
----
-
-## Code of Conduct
-
-All contributors must follow the project code of conduct.
-
-See **CODE_OF_CONDUCT.md**
+Les contributions sont les bienvenues. Veuillez consulter **CONTRIBUTING.md** pour plus de détails.
 
 ---
 
 ## Contributors
 
-Project developed by:
-
+Projet développé par :
 - nicolas tchenio
 
 ---
 
 ## License
 
-This project is licensed under the **MIT License**.
-
-See the **LICENSE** file for details.
+Ce projet est sous licence **MIT**. Voir le fichier **LICENSE** pour plus de détails.

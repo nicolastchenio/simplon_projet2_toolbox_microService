@@ -506,6 +506,7 @@ uv run uvicorn app_api.main:app --reload
 API disponible sur :
 
 http://127.0.0.1:8000
+http://127.0.0.1:8000/docs
 
 - Terminal 2 — Frontend
 ```
@@ -581,3 +582,15 @@ Pour que Sphinx puisse générer la documentation de votre API (en lisant vos fi
 ans votre fichier docs/source/conf.py. Le chemin configuré était sys.path.insert(0, os.path.abspath("../../app")). Or, dans votre nouveau projet, vous n'avez plus de dossier app/ à la racine. Vous avez maintenant app_api/ et app_front/.
 
 ------
+
+### Étape 4 — mise ajour de readme et de la documentation sphinx ###
+
+1. Correction de mon_module.rst : Il pointe maintenant vers maths.mon_module.
+2. Ajout de api_db.rst et models.rst : Pour documenter vos scripts de base de données et vos modèles.
+3. Mise à jour de index.rst : Pour inclure ces nouvelles pages dans le menu.
+4. Reconstruction : J'ai utilisé uv run sphinx-build pour générer la doc et je l'ai copiée dans votre dossier public/.
+
+5. Création de app_api/__init__.py pour faire de app_api un package Python valide.
+6. Correction de app_api/models/models.py en remplaçant l'import relatif par un import absolu (from app_api.modules.connect import Base).
+7. Mise à jour des fichiers .rst (mon_module.rst, api_db.rst, models.rst) pour utiliser les chemins de modules complets (ex: app_api.maths.mon_module).
+8. Reconstruction complète de la documentation.

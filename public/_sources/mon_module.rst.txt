@@ -1,10 +1,10 @@
-Documentation du module
-=======================
+Documentation du module Maths
+===========================
 
 Fonctions principales
 --------------------
 
-.. automodule:: modules.mon_module
+.. automodule:: app_api.maths.mon_module
    :members:
    :undoc-members:
    :show-inheritance:
