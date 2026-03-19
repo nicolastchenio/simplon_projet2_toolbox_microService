@@ -673,3 +673,5 @@ def get_db():
   Voici le changement stratégique :
    1. Isolation des tests : J'ai mis à jour tests/conftest.py pour qu'il force l'utilisation de sqlite:///./tests/test_db.sqlite avant même d'importer le code de l'API.
    2. Priorité à la configuration de test : J'ai modifié app_api/modules/connect.py pour qu'il vérifie d'abord si une DATABASE_URL est déjà définie (ce que fait conftest.py). Si elle n'est pas définie (cas du lancement normal de l'app), il continue d'utiliser votre configuration PostgreSQL du fichier .env.
+
+### Phase C : Orchestration Docker Compose (test en local)
