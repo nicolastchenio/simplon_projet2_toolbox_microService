@@ -870,4 +870,17 @@ explications :
 fetch-depth: 0	=> permet de scanner tout l'historique Git
 gitleaks-action	=> lance le scan de secrets
 
-3) qs
+3) test Faites exprès de pousser une variable dans un commit, constatez l'échec de la CI, puis nettoyez votre historique
+- ajouter dans README "PASSWORD="mypassword123" et "PASSWORD="mypassword123"
+- pusher le code :
+```
+git add .
+git commit -m "test secret"
+git push
+```
+- voir l'échec de la CI dans GitHub → Actions
+- Security Scan ❌ FAILED
+```
+git reset --hard HEAD~1
+git reset --hard HEAD~1
+```
