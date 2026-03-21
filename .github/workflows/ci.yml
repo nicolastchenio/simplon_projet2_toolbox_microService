@@ -23,6 +23,8 @@ jobs:
       # 1️⃣ Checkout du code
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+            fetch-depth: 0 
 
       # 2️⃣ Setup uv et Python
       - name: Install uv
