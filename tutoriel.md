@@ -1058,3 +1058,12 @@ jobs:
 docker pull nico8760007/mon-api:latest
 docker pull nico8760007/mon-front:latest
 ```
+
+### Orchestration finale ###
+
+creation du fichier `docker-compose.prod.yml` a la racine du projet.
+
+commande en production :
+```
+docker compose -f docker-compose.prod.yml up -d
+```
