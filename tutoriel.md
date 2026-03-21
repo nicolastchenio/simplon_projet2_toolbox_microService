@@ -828,7 +828,7 @@ docker-compose up
 ```
 ## Phase D: Automatisation et Distribution (GitHub & DockerHub) ##
 
-### CI Améliorée (Gitleaks)
+### CI Améliorée (Gitleaks) ### 
 
 1) créer un nouveau workflow GitHub : ".github/workflows/security.yml"
 
@@ -885,4 +885,176 @@ git push
 ```
 git reset --hard HEAD~1
 git reset --hard HEAD~1
+```
+
+### Livraison Continue (CD) ###
+
+1) integre le security.yml dans ci.yml et supprimer apres security.yml
+
+```
+name: CI
+
+permissions:
+  contents: write
+
+# Déclenchement sur push ou PR sur main, dev, ou feat/*
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - 'feat/**'
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout du code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Setup uv et Python
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install Python 3.11
+        run: uv python install 3.11
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      # 3️⃣ Linting avec Ruff
+      - name: Lint code with Ruff
+        run: uv run ruff check .
+
+      # 4️⃣ Tests unitaires avec pytest et couverture
+      - name: Run tests with pytest
+        run: |
+          uv run pytest --cov-report=xml
+          uv run genbadge coverage -i coverage.xml -o coverage.svg
+
+      - name: Commit coverage badge
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add coverage.svg
+          git commit -m "Update coverage badge" || echo "No changes"
+          git push
+
+      # 5️⃣ Scan de secrets avec Gitleaks
+      - name: Run Gitleaks scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+2) Se connecter a son compte sur DockerHub (https://hub.docker.com/)
+   
+    Pour créer un token DockerHub à utiliser comme secret GitHub (DOCKERHUB_PASSWORD).
+    Clique sur ton avatar en haut à droite → Account Settings → Personnal access tokens
+    - Donner un nom explicite à ton token (ex. GitHub Actions CD).
+    - Choisir le scope “Read & Write” si tu veux pouvoir pusher des images depuis GitHub Actions.
+    Clique sur Generate.
+    ⚠️ Important : le token n’est affiché qu’une seule fois. Copie-le immédiatement.
+
+3) Dans le repository du projet (https://github.com/)
+
+Pour pouvoir push tes images, GitHub Actions doit se connecter à ton compte DockerHub.
+
+Dans ton dépôt GitHub → Settings → Secrets → Actions
+puis choisir “New repository secret” dans Repository secrets.
+Ajouter :
+- DOCKERHUB_USERNAME → ton nom d’utilisateur DockerHub
+- DOCKERHUB_PASSWORD → ton mot de passe DockerHub ou un token d’accès
+
+Dans le workflow, on utilise ces secrets :
+
+```
+- name: Log in to DockerHub
+  uses: docker/login-action@v2
+  with:
+    username: ${{ secrets.DOCKERHUB_USERNAME }}
+    password: ${{ secrets.DOCKERHUB_PASSWORD }}
+```
+
+4) Builder et pusher les images Docker
+
+Ensuite, on construit l’image et on la pousse avec deux tags :
+
+- latest → pour toujours avoir la dernière version.
+- ${{ github.sha }} → pour versionner avec le hash du commit, utile pour revenir à une version précédente.
+
+```
+- name: Build and Push
+  uses: docker/build-push-action@v5
+  with:
+    context: ./app_api          # dossier contenant le Dockerfile
+    push: true                  # push automatique sur DockerHub
+    tags: |
+      ${{ secrets.DOCKERHUB_USERNAME }}/mon-api:latest
+      ${{ secrets.DOCKERHUB_USERNAME }}/mon-api:${{ github.sha }}
+```
+
+=> creation du fichier .github\workflows\cd.yml
+
+```
+name: CD DockerHub
+
+on:
+  workflow_run:
+    workflows: ["CI"]  # Nom exact de ton workflow CI
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build and Push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app_api         # dossier contenant le Dockerfile de l'API
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/mon-api:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/mon-api:${{ github.sha }}
+
+      - name: Build and Push Front image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app_front       # dossier contenant le Dockerfile du Front
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/mon-front:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/mon-front:${{ github.sha }}
+```
+
+4) pusher le code
+
+- Surveille l’exécution du workflow CD en allant dans Actions → CD sur GitHub.
+- À la fin, tes images doivent apparaître sur ton compte DockerHub (nico8760007/mon-api et nico8760007/mon-front).
+- Tester tes images (facultatif) en récupérant l’image depuis n’importe quelle machine avec :
+```
+docker pull nico8760007/mon-api:latest
+docker pull nico8760007/mon-front:latest
 ```
