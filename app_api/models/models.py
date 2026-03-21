@@ -3,9 +3,8 @@
 Defines the Operation table to store mathematical operations with results.
 """
 
-from sqlalchemy import Column, Float, Integer, String
-
 from modules.connect import Base  # importer Base depuis connect
+from sqlalchemy import Column, Float, Integer, String
 
 
 class Operation(Base):

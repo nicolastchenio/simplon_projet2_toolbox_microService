@@ -3,10 +3,9 @@
 Provides functions to insert, retrieve, update, and delete operations from the database.
 """
 
-from sqlalchemy.orm import Session
-
 from maths.mon_module import add, square, sub
 from models.models import Operation
+from sqlalchemy.orm import Session
 
 
 def calculate_result(operation: str, a: float, b: float | None = None) -> float:

@@ -85,6 +85,15 @@ wheels = [
 name = "app-api"
 version = "0.1.0"
 source = { virtual = "app_api" }
+dependencies = [
+    { name = "fastapi" },
+    { name = "pandas" },
+    { name = "psycopg2-binary" },
+    { name = "pydantic" },
+    { name = "python-dotenv" },
+    { name = "sqlalchemy" },
+    { name = "uvicorn" },
+]
 
 [package.dev-dependencies]
 app-api = [
@@ -103,6 +112,15 @@ dev = [
 ]
 
 [package.metadata]
+requires-dist = [
+    { name = "fastapi", specifier = ">=0.135.1" },
+    { name = "pandas", specifier = ">=2.2.2,<3.0.0" },
+    { name = "psycopg2-binary", specifier = ">=2.9.10" },
+    { name = "pydantic", specifier = ">=2.12.5" },
+    { name = "python-dotenv", specifier = ">=1.0.1" },
+    { name = "sqlalchemy", specifier = ">=2.0.48" },
+    { name = "uvicorn", specifier = ">=0.41.0" },
+]
 
 [package.metadata.requires-dev]
 app-api = [
@@ -124,6 +142,13 @@ dev = [
 name = "app-front"
 version = "0.1.0"
 source = { virtual = "app_front" }
+dependencies = [
+    { name = "pandas" },
+    { name = "python-dotenv" },
+    { name = "requests" },
+    { name = "sqlalchemy" },
+    { name = "streamlit" },
+]
 
 [package.dev-dependencies]
 app-front = [
@@ -135,6 +160,13 @@ app-front = [
 ]
 
 [package.metadata]
+requires-dist = [
+    { name = "pandas", specifier = ">=2.3.3" },
+    { name = "python-dotenv", specifier = ">=1.0.1" },
+    { name = "requests", specifier = ">=2.32.5" },
+    { name = "sqlalchemy", specifier = ">=2.0.48" },
+    { name = "streamlit", specifier = ">=1.55.0" },
+]
 
 [package.metadata.requires-dev]
 app-front = [
