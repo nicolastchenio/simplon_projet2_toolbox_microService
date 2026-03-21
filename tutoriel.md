@@ -831,6 +831,12 @@ docker-compose up
 ### CI Améliorée (Gitleaks)
 
 1) créer un nouveau workflow GitHub : ".github/workflows/security.yml"
+
+a noter :
+Depuis les versions récentes, GITHUB_TOKEN est obligatoire pour scanner les pull requests.
+
+Il faut simplement ajouter le token dans ton workflow GitHub Actions.
+
 2) Fichier security.yml
 ```
 name: Security Scan
@@ -857,6 +863,8 @@ jobs:
 
       - name: Run Gitleaks scan
         uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 explications :
 fetch-depth: 0	=> permet de scanner tout l'historique Git
