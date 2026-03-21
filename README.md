@@ -150,7 +150,3 @@ Projet développé par :
 ## License
 
 Ce projet est sous licence **MIT**. Voir le fichier **LICENSE** pour plus de détails.
-
-API_KEY=123456789SECRET
-
-PASSWORD="mypassword123"

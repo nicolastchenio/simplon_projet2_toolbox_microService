@@ -872,8 +872,8 @@ gitleaks-action	=> lance le scan de secrets
 
 3) test Faites exprès de pousser une variable dans un commit, constatez l'échec de la CI, puis nettoyez votre historique
 - ajouter dans README 
-  "PASSWORD="mypassword123"" et
-  "API_KEY=123456789SECRET"
+  "PASSWORD="<your_password_here>"" et
+  "API_KEY=<your_api_key_here>"
 - pusher le code :
 ```
 git add .
