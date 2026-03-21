@@ -702,23 +702,22 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 # Définition du répertoire de travail
 WORKDIR /app
 
-# Copie des fichiers de configuration
-COPY pyproject.toml uv.lock ./
+# On s'assure qu'aucun dossier .venv local n'interfère
+COPY pyproject.toml ./
+RUN uv sync --no-install-project
 
-# Installation des dépendances sans installer le package lui-même
-RUN uv sync --frozen --no-install-project
+# On ajoute le dossier .venv/bin au PATH pour pouvoir lancer uvicorn
+ENV PATH="/app/.venv/bin:$PATH"
 
-# Copie du reste de l'application (le dossier app_api devient la racine ici)
+# Copie du reste de l'application
 COPY . .
-
-# On s'assure que le dossier parent est dans le PYTHONPATH pour les imports
-ENV PYTHONPATH=/app
 
 # Exposition du port
 EXPOSE 8000
 
-# Commande de lancement (on utilise uv run pour l'environnement virtuel)
-CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Lancement de l'API
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
 
 ```
 
@@ -733,11 +732,12 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 # Définition du répertoire de travail
 WORKDIR /app
 
-# Copie des fichiers de configuration
-COPY pyproject.toml uv.lock ./
+# Préparation de l'environnement virtuel
+COPY pyproject.toml ./
+RUN uv sync --no-install-project
 
-# Installation des dépendances sans installer le package lui-même
-RUN uv sync --frozen --no-install-project
+# On ajoute le dossier .venv/bin au PATH pour pouvoir lancer streamlit
+ENV PATH="/app/.venv/bin:$PATH"
 
 # Copie du reste de l'application
 COPY . .
@@ -746,7 +746,7 @@ COPY . .
 EXPOSE 8501
 
 # Lancement de streamlit
-CMD ["uv", "run", "streamlit", "run", "main.py", "--server.port", "8501", "--server.address", "0.0.0.0"]
+CMD ["streamlit", "run", "main.py", "--server.port", "8501", "--server.address", "0.0.0.0"]
 ```
 
 - Docker-compose.yml
@@ -803,6 +803,7 @@ networks:
 
 volumes:
   postgres_data:
+
 ```
 
 pour tester :
@@ -819,7 +820,46 @@ Commandes pour reconstruire les images proprement :
 docker-compose down
 docker-compose up --build
 ```
-
+autres commandes :
+```
 docker-compose down --volumes --remove-orphans
 docker-compose build --no-cache
 docker-compose up
+```
+## Phase D: Automatisation et Distribution (GitHub & DockerHub) ##
+
+### CI Améliorée (Gitleaks)
+
+1) créer un nouveau workflow GitHub : ".github/workflows/security.yml"
+2) Fichier security.yml
+```
+name: Security Scan
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks scan
+        uses: gitleaks/gitleaks-action@v2
+```
+explications :
+fetch-depth: 0	=> permet de scanner tout l'historique Git
+gitleaks-action	=> lance le scan de secrets
+
+3) qs
