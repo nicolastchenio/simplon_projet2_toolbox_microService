@@ -674,4 +674,152 @@ def get_db():
    1. Isolation des tests : J'ai mis à jour tests/conftest.py pour qu'il force l'utilisation de sqlite:///./tests/test_db.sqlite avant même d'importer le code de l'API.
    2. Priorité à la configuration de test : J'ai modifié app_api/modules/connect.py pour qu'il vérifie d'abord si une DATABASE_URL est déjà définie (ce que fait conftest.py). Si elle n'est pas définie (cas du lancement normal de l'app), il continue d'utiliser votre configuration PostgreSQL du fichier .env.
 
-### Phase C : Orchestration Docker Compose (test en local)
+## Phase C : Orchestration Docker Compose (test en local) ##
+-app_api\main.py
+supprimer le préfixe app_api. des imports.
+=> remplacer :
+
+```
+from app_api.modules.connect import Base, engine get_db
+from app_api.modules.crud import (
+```
+par
+```
+from modules.connect import Base, engine, get_db
+from modules.crud import (
+```
+idem dans app_api\models\models.py et app_api\modules\crud.py et app_api\main.py
+
+- app_api > Dockerfile
+
+```
+# Utilisation d'une image Python légère
+FROM python:3.11-slim
+
+# Installation de uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# Définition du répertoire de travail
+WORKDIR /app
+
+# Copie des fichiers de configuration
+COPY pyproject.toml uv.lock ./
+
+# Installation des dépendances sans installer le package lui-même
+RUN uv sync --frozen --no-install-project
+
+# Copie du reste de l'application (le dossier app_api devient la racine ici)
+COPY . .
+
+# On s'assure que le dossier parent est dans le PYTHONPATH pour les imports
+ENV PYTHONPATH=/app
+
+# Exposition du port
+EXPOSE 8000
+
+# Commande de lancement (on utilise uv run pour l'environnement virtuel)
+CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+```
+
+- app_front > Dockerfile
+```
+# Utilisation d'une image Python légère
+FROM python:3.11-slim
+
+# Installation de uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# Définition du répertoire de travail
+WORKDIR /app
+
+# Copie des fichiers de configuration
+COPY pyproject.toml uv.lock ./
+
+# Installation des dépendances sans installer le package lui-même
+RUN uv sync --frozen --no-install-project
+
+# Copie du reste de l'application
+COPY . .
+
+# Exposition du port streamlit
+EXPOSE 8501
+
+# Lancement de streamlit
+CMD ["uv", "run", "streamlit", "run", "main.py", "--server.port", "8501", "--server.address", "0.0.0.0"]
+```
+
+- Docker-compose.yml
+
+```
+services:
+  db:
+    image: postgres:15
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - api-db
+
+  api:
+    build:
+      context: ./app_api
+    container_name: fastapi-api
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - POSTGRES_HOST=db
+      - PYTHONPATH=.
+    depends_on:
+      - db
+    networks:
+      - api-db
+      - front-api
+    ports:
+      - "8000:8000"
+
+  front:
+    build:
+      context: ./app_front
+    container_name: streamlit-front
+    environment:
+      - API_HOST=api
+    depends_on:
+      - api
+    networks:
+      - front-api
+    ports:
+      - "8501:8501"
+
+networks:
+  front-api:
+  api-db:
+
+volumes:
+  postgres_data:
+```
+
+pour tester :
+- Lancez simplement la commande suivante à la racine :
+```
+docker-compose up --build
+```
+Une fois lancé :
+   * Frontend : Accédez à http://localhost:8501.
+   * API : Accédez à http://localhost:8000/docs.
+
+Commandes pour reconstruire les images proprement :
+```
+docker-compose down
+docker-compose up --build
+```
+
+docker-compose down --volumes --remove-orphans
+docker-compose build --no-cache
+docker-compose up

@@ -5,8 +5,8 @@ Provides functions to insert, retrieve, update, and delete operations from the d
 
 from sqlalchemy.orm import Session
 
-from app_api.maths.mon_module import add, square, sub
-from app_api.models.models import Operation
+from maths.mon_module import add, square, sub
+from models.models import Operation
 
 
 def calculate_result(operation: str, a: float, b: float | None = None) -> float:

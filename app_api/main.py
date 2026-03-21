@@ -6,8 +6,8 @@ Provides API endpoints to insert, update, delete, and list mathematical operatio
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 
-from app_api.modules.connect import Base, engine, get_db
-from app_api.modules.crud import (
+from modules.connect import Base, engine, get_db
+from modules.crud import (
     create_data,
     delete_operation,
     get_all_data,

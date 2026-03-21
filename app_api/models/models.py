@@ -5,7 +5,7 @@ Defines the Operation table to store mathematical operations with results.
 
 from sqlalchemy import Column, Float, Integer, String
 
-from app_api.modules.connect import Base  # importer Base depuis connect
+from modules.connect import Base  # importer Base depuis connect
 
 
 class Operation(Base):
